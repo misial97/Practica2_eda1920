@@ -255,8 +255,27 @@ public class LinkedTree<E> implements NAryTree<E> {
 
     @Override
     public void moveSubtree(Position<E> pOrig, Position<E> pDest) throws RuntimeException {
-        //TODO: Practica 2 Ejercicio 1
-        throw new RuntimeException("Not implemented");
+        TreeNode<E> origen = checkPosition(pOrig);
+        TreeNode<E> destino = checkPosition(pDest);
+
+        if(origen.equals(this.root)){
+            throw new RuntimeException("Root node can't be moved");
+        }else if(pOrig.equals(pDest)){
+            throw new RuntimeException("Both positions are the same");
+        }
+        //comprobacion de si el nodo destino es hijo del nodo origen
+        Iterator<Position<E>> it = new BFSIterator<>(this,pOrig);
+        while(it.hasNext()){
+            Position<E> p = it.next();
+            if(p==pDest){
+                throw new RuntimeException("Target position can't be a sub tree of origin");
+            }
+        }
+
+        origen.getParent().getChildren().remove(origen);//borras hijo destino de su padre
+        destino.getChildren().add(origen);//aniades hijo al padre destino
+        origen.setParent(destino); //cambias el padre a la raiz del subarbol a mover
+
     }
 
 }

@@ -12,9 +12,8 @@ public class LinkedQueue<E> implements Queue<E> {
 
         public Node(E element){
             this.setElement(element);
-            setNext(null);
+            this.next.setNext(null);
         }
-
 
         public E getElement() {
             return element;
