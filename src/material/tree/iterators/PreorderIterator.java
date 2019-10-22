@@ -15,54 +15,71 @@ import java.util.function.Predicate;
 //TODO: Practica 2 Ejercicio 3
 public class PreorderIterator<E> implements Iterator<Position<E>> {
 
-    private final Stack<Position<E>> nodeStack;
-    private final Stack<Position<E>> nodeStackAux;
+    private final Queue<Position<E>> nodeQueue;
     private final Tree<E> tree;
 
+    //Constructores
+
     public PreorderIterator(Tree<E> tree) {
-        this.nodeStack = new Stack<>();
-        this.nodeStackAux = new Stack<>();
+        this.nodeQueue = new ArrayDeque<>();
         this.tree = tree;
         if (!this.tree.isEmpty()) {
-            this.nodeStack.add(tree.root());
+            recorrido(this.tree.root(), null);
         }
     }
 
     public PreorderIterator(Tree<E> tree, Position<E> start) {
-        this.nodeStack = new Stack<>();
-        this.nodeStackAux = new Stack<>();
+        this.nodeQueue = new ArrayDeque<>();
         this.tree = tree;
-        this.nodeStack.add(start);
+        recorrido(start, null);
 }
 
     public PreorderIterator(Tree<E> tree, Position<E> start, Predicate<Position<E>> predicate) {
-        this.nodeStack = new Stack<>();
-        this.nodeStackAux = new Stack<>();
+        this.nodeQueue = new ArrayDeque<>();
         this.tree = tree;
-        this.nodeStack.add(start);
+        recorrido(start, predicate);
     }
 
 
     @Override
     public boolean hasNext() {
-        return !this.nodeStack.empty();
+        return !this.nodeQueue.isEmpty();
     }
 
+    //simplemente se recupera el primero de la cola con el recorrido ya completo
     @Override
     public Position<E> next() {
 
-        if(this.nodeStack.empty()){
+        if(this.nodeQueue.isEmpty()){
             throw new NoSuchElementException();
         }
-        Position<E> aux = this.nodeStack.pop();
-        for (Position<E> node : tree.children(aux)) {
-            this.nodeStackAux.push(node);
-        }
-        while(!this.nodeStackAux.empty()){
-            Position<E> elem = this.nodeStackAux.pop();
-            this.nodeStack.push(elem);
-        }
-        return aux;
+
+        return this.nodeQueue.poll();
     }
 
+    //Logica del iterador (se recorre desde la posicion start hasta el final almacenando el recorrido en una cola)
+    private void recorrido(Position<E> start, Predicate<Position<E>> predicate){
+        if(start==null)
+            throw new RuntimeException("Position null");
+
+        Stack<Position<E>> nodeStack = new Stack<>();
+        Stack<Position<E>> nodeStackAux = new Stack<>();
+        Position<E> aux;
+
+        nodeStack.push(start);
+
+        while(!nodeStack.empty()){
+            aux = nodeStack.pop();
+            for (Position<E> node : tree.children(aux)) {
+                nodeStackAux.push(node);
+            }
+            while(!nodeStackAux.empty()){
+                Position<E> elem = nodeStackAux.pop();
+                nodeStack.push(elem);
+            }
+            if((predicate==null) || (predicate.test(aux)))
+                this.nodeQueue.add(aux);
+        }
+    }
 }
+
