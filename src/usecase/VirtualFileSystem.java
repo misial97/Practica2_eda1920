@@ -1,6 +1,5 @@
 package usecase;
 
-
 import material.Position;
 import material.tree.iterators.PreorderIterator;
 import material.tree.narytree.LinkedTree;
@@ -89,18 +88,35 @@ public class VirtualFileSystem {
     }
 
     public void moveFileById(int idFile, int idTargetFolder) {
-        //error al hacer el getVFS pq no actualiza rutas de los nodos al  moverlos
+        //error al hacer el getVFS (solo las tabulaciones) pq no actualiza rutas de los nodos al  moverlos
         Position<File> pOrigin = this.nodeList.get(idFile);
         Position<File> pDest = this.nodeList.get(idTargetFolder);
-        /*if(idFileArbol<idTargetFolderArbol) esta excepcion no esta bien recorrer y comparar indices
-            throw new RuntimeException("A file can't be a subdirectory of itself.");
-        else*/ if(!pDest.getElement().isDirectory())
-            throw new RuntimeException("Target can't be a file.");
-        try {
-            this.tree.moveSubtree(pOrigin, pDest);
+        try{
+            //forzamos checkPosition
+            this.tree.isRoot(pOrigin);
+            this.tree.isRoot(pDest);
         }catch (IllegalStateException e){
             throw new RuntimeException("Invalid ID.");
         }
+        int idFileArbol = 0;
+        int idTargetFolderArbol = 0;
+        int i = 0;
+            PreorderIterator<File> preorderIterator = new PreorderIterator<>(this.tree);
+            while (preorderIterator.hasNext()) {
+                Position<File> actualFile = preorderIterator.next();
+                if(pOrigin == actualFile){
+                    idFileArbol = i;
+                }else if(pDest == actualFile){
+                    idTargetFolderArbol = i;
+                }
+                i++;
+            }
+            if(idFileArbol<idTargetFolderArbol)
+                throw new RuntimeException("A file can't be a subdirectory of itself.");
+            else if(!pDest.getElement().isDirectory())
+                throw new RuntimeException("Target can't be a file.");
+
+            this.tree.moveSubtree(pOrigin, pDest);
     }
 
     public void removeFileById(int idFile) {
@@ -119,9 +135,11 @@ public class VirtualFileSystem {
         try {
             PreorderIterator<File> preorderIterator = new PreorderIterator<>(this.tree, start);
             while (preorderIterator.hasNext()) {
-                String actualfile = preorderIterator.next().getElement().getName();
-                if (actualfile.contains(substring)) {
-                    result.add(actualfile);
+                Position <File> actualFilePos = preorderIterator.next();
+                String actualfileName = actualFilePos.getElement().getName();
+                int index = this.nodeList.indexOf(actualFilePos);
+                if (actualfileName.contains(substring)) {
+                    result.add(index + "\t" + actualfileName);
                 }
             }
         }catch (IllegalStateException e){
@@ -131,11 +149,54 @@ public class VirtualFileSystem {
     }
 
     public Iterable<String> findBySize(int idStartFile, long minSize, long maxSize) {
-        throw new RuntimeException("Not yet implemented");
+        if(minSize > maxSize){
+            throw new RuntimeException("Invalid range.");
+        }
+        List<String> result = new ArrayList<>();
+        Position<File> start = this.nodeList.get(idStartFile);
+        try {
+            PreorderIterator<File> preorderIterator = new PreorderIterator<>(this.tree, start);
+            while (preorderIterator.hasNext()) {
+                Position <File> actualFilePos = preorderIterator.next();
+                String actualfileName = actualFilePos.getElement().getName();
+                int index = this.nodeList.indexOf(actualFilePos);
+                long fileSize = actualFilePos.getElement().length();
+                if ((actualFilePos.getElement().isFile()) && (fileSize >= minSize) && (fileSize <= maxSize)) {
+                    result.add(index + "\t" + actualfileName);
+                }
+            }
+        }catch (IllegalStateException e){
+            throw new RuntimeException("Invalid ID.");
+        }
+        return result;
     }
 
     public String getFileVirtualPath(int idFile) {
-        throw new RuntimeException("Not yet implemented");
+        String result = "vfs:";
+        Position<File> filePosition = this.nodeList.get(idFile);
+        String fileName = "/" + filePosition.getElement().getName();
+        try{
+            if(this.tree.isRoot(filePosition)){
+                return result + fileName;
+            }else{
+                Position parentPosition = this.tree.parent(filePosition);
+                return getFileVirtualPathAux(fileName, parentPosition);
+            }
+        }catch (IllegalStateException e){
+            throw new RuntimeException("Invalid ID.");
+        }
+    }
+
+    private String getFileVirtualPathAux(String path, Position<File> pos){
+        String result;
+        String fileActualName = "/" + pos.getElement().getName();
+        if(this.tree.isRoot(pos)){
+            return "vfs:" + fileActualName + path;
+        }else{
+            result = fileActualName + path;
+            Position<File> parentPos = this.tree.parent(pos);
+            return getFileVirtualPathAux(result, parentPos);
+        }
     }
 
     public String getFilePath(int idFile) {
