@@ -56,16 +56,13 @@ public class VirtualFileSystem {
         }
     }
 
-    private String tabs(String actualPath){
-        String result = "";
-        String rootPath = this.tree.root().getElement().getPath();
-        String pathWithoutRoot = actualPath.replace(rootPath, "");
-        for(int i = 0; i < pathWithoutRoot.length() ; i++){
-                if((pathWithoutRoot.charAt(i) == '\\')||(pathWithoutRoot.charAt(i) == '/')){
-                    result += "\t";
-                }
+    private String tabs(Position<File> filePosition){
+        if(this.tree.isRoot(filePosition)){
+            return "";
+        }else{
+            Position<File> parent = this.tree.parent(filePosition);
+            return tabs(parent) + "\t";
         }
-        return result;
     }
 
     public String getFileSystem() {
@@ -80,7 +77,7 @@ public class VirtualFileSystem {
             while (preorderIterator.hasNext()) {
                 Position<File> actualFile = preorderIterator.next();
                 index = this.nodeList.lastIndexOf(actualFile);
-                tabs = this.tabs(actualFile.getElement().getPath());
+                tabs = this.tabs(actualFile);
                 result += index + " " + tabs + actualFile.getElement().getName() + "\n";
             }
         }
