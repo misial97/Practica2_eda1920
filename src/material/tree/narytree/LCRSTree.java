@@ -114,13 +114,15 @@ public class LCRSTree<E> implements NAryTree<E> {
     @Override
     public Iterable<? extends Position<E>> children(Position<E> v) {
         TreeNode<E> node = checkPosition(v);
-        TreeNode<E> childAux = node.getChild();
         List<TreeNode<E>> children = new ArrayList<>();
-        children.add(childAux);
-
-        while(childAux!=null){
-            childAux = childAux.getSibling();
+        TreeNode<E> childAux = node.getChild();
+        if(childAux!=null) {
             children.add(childAux);
+
+            while (childAux.getSibling() != null) {
+                childAux = childAux.getSibling();
+                children.add(childAux);
+            }
         }
 
         return children;
@@ -181,7 +183,7 @@ public class LCRSTree<E> implements NAryTree<E> {
             parent.setChild(newNode);
         }else{
             TreeNode<E> childAux = parent.getChild();
-            while (childAux!=null){
+            while (childAux.getSibling()!=null){
                 childAux = childAux.getSibling();
             }
             childAux.setSibling(newNode);
@@ -236,7 +238,7 @@ public class LCRSTree<E> implements NAryTree<E> {
             destino.setChild(origen);
         }else{
             TreeNode<E> childAux = destino.getChild();
-            while (childAux!=null){
+            while (childAux.getSibling()!=null){
                 childAux = childAux.getSibling();
             }
             childAux.setSibling(origen);
