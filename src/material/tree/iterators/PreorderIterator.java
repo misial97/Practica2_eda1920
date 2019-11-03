@@ -11,6 +11,7 @@ import java.util.function.Predicate;
  *
  * @param <E>
  * @author A. Duarte, J. Vélez, J. Sánchez-Oro, JD. Quintana
+ * Realizado por Miguel Sierra
  */
 //TODO: Practica 2 Ejercicio 3
 public class PreorderIterator<E> implements Iterator<Position<E>> {

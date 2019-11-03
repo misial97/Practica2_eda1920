@@ -253,6 +253,10 @@ public class LinkedTree<E> implements NAryTree<E> {
         return new BFSIterator<>(this);
     }
 
+    /**
+    * Realizado por Miguel Sierra
+    * */
+
     @Override
     public void moveSubtree(Position<E> pOrig, Position<E> pDest) throws RuntimeException {
         TreeNode<E> origen = checkPosition(pOrig);

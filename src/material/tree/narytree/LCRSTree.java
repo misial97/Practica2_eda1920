@@ -12,6 +12,7 @@ import java.util.List;
  *
  * @param <E> the elements stored in the tree
  * @author Raul Cabido, Abraham Duarte, Jose Velez, Jesús Sánchez-Oro
+ * Realizado por Miguel Sierra
  */
 public class LCRSTree<E> implements NAryTree<E> {
 
